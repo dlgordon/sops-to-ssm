@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
-	"github.com/aws/aws-sdk-go-v2/service/ssm"
 	"log"
 	"strings"
+
+	"github.com/aws/aws-sdk-go-v2/service/ssm"
+	"github.com/aws/aws-sdk-go-v2/service/ssm/types"
 )
 
 type awsParameter struct {
@@ -39,7 +41,7 @@ func GetParameters(client *ssm.Client) map[string]awsParameter {
 	return existingAWSParameters
 }
 
-func BuildDiff(localVariables map[string]string, existingVariables map[string]awsParameter) ([]*ssm.PutParameterInput, []*ssm.PutParameterInput) {
+func BuildDiff(localVariables map[string]string, existingVariables map[string]awsParameter, secureString bool) ([]*ssm.PutParameterInput, []*ssm.PutParameterInput) {
 	var newParameters []*ssm.PutParameterInput
 	var changedParameters []*ssm.PutParameterInput
 
@@ -48,10 +50,14 @@ func BuildDiff(localVariables map[string]string, existingVariables map[string]aw
 		if !ok {
 			var newPath = strings.Join([]string{ssmPathPrefix, k}, "")
 			var newValue = v
+			var parameterType = types.ParameterTypeString
+			if secureString {
+				parameterType = types.ParameterTypeSecureString
+			}
 			newParameters = append(newParameters, &ssm.PutParameterInput{
 				Name:  &newPath,
 				Value: &newValue,
-				Type:  "String",
+				Type:  parameterType,
 			})
 			continue
 		}
@@ -63,7 +69,7 @@ func BuildDiff(localVariables map[string]string, existingVariables map[string]aw
 			changedParameters = append(changedParameters, &ssm.PutParameterInput{
 				Name:      &newPath,
 				Value:     &newValue,
-				Type:      "String",
+				Type:      types.ParameterType(currentValue.Type),
 				Overwrite: true,
 			})
 			//log.Printf("Name %s Value %s", *changedParameters[len(changedParameters)-1].Name, *changedParameters[len(changedParameters)-1].Value)

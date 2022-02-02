@@ -52,11 +52,11 @@ func main() {
 	client := ssm.NewFromConfig(awsConfig)
 	existingSsmParameters := GetParameters(client)
 
-	newParameters, changedParameters := BuildDiff(sopsFileParameters.Environment, existingSsmParameters)
+	newParameters, changedParameters := BuildDiff(sopsFileParameters.Environment, existingSsmParameters, false)
 	log.Printf("Found %d New Environment Parameters", len(newParameters))
 	log.Printf("Found %d Changed Environment Parameters", len(changedParameters))
 
-	newSecrets, changedSecrets := BuildDiff(sopsFileParameters.Secrets, existingSsmParameters)
+	newSecrets, changedSecrets := BuildDiff(sopsFileParameters.Secrets, existingSsmParameters, true)
 	log.Printf("Found %d New Secret Parameters", len(newSecrets))
 	log.Printf("Found %d Changed Secret Parameteres", len(changedSecrets))
 
