@@ -1,9 +1,9 @@
 # sops-to-ssm
 Simply put, this takes a sops file of a certain structure and sync the data intelligently with SSM.
 
-The SOPS file should be a YAML file in 2 sections, passed in with the `--sops-file-path` flag
-
 ```
+ssm:
+  path-prefix: <path to prefix>
 environment:
   NAME: VALUE
 secrets:
@@ -12,5 +12,25 @@ secrets:
 
 Of course, the file should be encrypted - sops-to-ssm will decrypt it based on the `sops:` section in the file.
 
-Specify the path prefix you want to upload/sync (note that sops-to-ssm current can't support root syncing) with the `--path-prefix` flag and sops-to-ssm will match the key/values 
-in the sops file with the appropriate SSM parameter and create it if it is missing or update it if it changed.
+There are currently two commands - `check` and `push`
+
+## check
+This will just do a diff against your local file, specified with `--sops-file-path` and the stored data in SSM. For example:
+```
+./sops-to-ssm check  -sops-file-path muhenvironment.yaml
+No New Parameters Found
+~ changed parameter PARAM 1
+~ changed parameter PARAM 2
+- removed parameter PARAM 3
+```
+
+## push
+Push your local file up to SSM and store the environment data under the prefix defined in the `--sops-file-path` file. For example:
+```
+./sops-to-ssm push -sops-file-path muhenvironment.yaml
+```
+
+By default, items that exist in SSM but not your local file will not be removed. You can chage this with the `-remove-missing` flag. For example:
+```
+./sops-to-ssm push -remove-missing -sops-file-path muhenvironment.yaml
+```
