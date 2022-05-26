@@ -36,6 +36,7 @@ func GetExistingAWSParameters(client *ssm.Client, ssmPathPrefix string) (map[str
 
 func PutParameters(client *ssm.Client, parameters []*ssm.PutParameterInput) {
 	for i := 0; i < len(parameters); i++ {
+		log.Printf("Putting paramter %s", *parameters[i].Name)
 		_, err := client.PutParameter(context.TODO(), parameters[i])
 		if err != nil {
 			log.Fatalf("Error setting a parameter: %v", err)

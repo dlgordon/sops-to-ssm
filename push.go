@@ -20,6 +20,10 @@ func Push() (int, error) {
 		return 1, err
 	}
 
+	if data == nil {
+		log.Fatalf("Sops data missing. Did you specify -sops-file-path?")
+	}
+
 	ssmPathPrefix := data.Ssm["path-prefix"]
 	if !strings.HasSuffix(ssmPathPrefix, "/") {
 		log.Printf("Specified SSM prefix is missing the trailing /, adding")
@@ -41,8 +45,8 @@ func Push() (int, error) {
 			parameterType := localParameters[parameterName].Type
 			ssmName := strings.Join([]string{ssmPathPrefix, parameterName}, "")
 			ssmCreates = append(ssmCreates, &ssm.PutParameterInput{Name: &ssmName, Value: &parameterValue, Type: types.ParameterType(parameterType), Overwrite: false})
-			PutParameters(client, ssmCreates)
 		}
+		PutParameters(client, ssmCreates)
 	}
 
 	if len(changedParameters) > 0 {
@@ -53,8 +57,8 @@ func Push() (int, error) {
 			parameterType := localParameters[parameterName].Type
 			ssmName := strings.Join([]string{ssmPathPrefix, parameterName}, "")
 			ssmUpdates = append(ssmUpdates, &ssm.PutParameterInput{Name: &ssmName, Value: &parameterValue, Type: types.ParameterType(parameterType), Overwrite: true})
-			PutParameters(client, ssmUpdates)
 		}
+		PutParameters(client, ssmUpdates)
 	}
 
 	if *shouldDelete && len(remoteOnlyParameters) > 0 {

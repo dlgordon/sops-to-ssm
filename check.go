@@ -19,6 +19,10 @@ func Check() (int, error) {
 		return 1, err
 	}
 
+	if &data == nil {
+		log.Fatalf("Sops data missing. Did you specify -sops-file-path?")
+	}
+
 	ssmPathPrefix := data.Ssm["path-prefix"]
 	if !strings.HasSuffix(ssmPathPrefix, "/") {
 		log.Printf("Specified SSM prefix is missing the trailing /, adding")
